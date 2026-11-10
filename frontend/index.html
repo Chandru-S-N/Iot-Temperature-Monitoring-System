@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Chemical Storage Room – 3D Emergency Response Platform</title>
+    <meta name="description" content="IoT-Based Virtual Temperature Monitoring and Simulation System for Chemical Storage Rooms – Master Final Year Engineering Project">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"
+        }
+    }
+    </script>
+</head>
+<body>
+    <div class="app">
+        <!-- ===== CRITICAL EMERGENCY BANNER ===== -->
+        <div id="banner-emergency" class="banner-emergency" style="display:none;">
+            <span>🔴 CRITICAL STORAGE CONDITION DETECTED — EMERGENCY ACTIONS REQUIRED</span>
+            <div style="display:flex; align-items:center; gap:0.4rem;">
+                <button id="btn-sound-mute-banner" class="btn btn-secondary btn-sm" style="padding:0.2rem 0.5rem; font-size:0.68rem; background:rgba(255,255,255,0.2); color:#fff; border:1px solid rgba(255,255,255,0.4);" title="Silence Siren">🔊 Siren: Active</button>
+                <button id="btn-emergency-response-banner" class="btn btn-danger btn-sm" onclick="document.getElementById('modal-emergency').classList.add('open')">🚨 Emergency Response Guidance</button>
+            </div>
+        </div>
+
+        <!-- ===== TOP HEADER BAR ===== -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <span class="topbar-icon">🧪</span>
+                <div>
+                    <h1>IoT Virtual Chemical Storage Monitoring Platform</h1>
+                    <p>3D WebGL Multi-Zone Telemetry · Emergency Response Simulation · Flask/SQLite Backend</p>
+                </div>
+            </div>
+            <div class="topbar-right">
+                <div class="pill">
+                    <label style="font-size:0.72rem; color:var(--text-muted); font-weight:600; margin-right:0.3rem;">Preset:</label>
+                    <select id="select-preset" class="select-pill">
+                        <option value="3">Config A (3 Sensors)</option>
+                        <option value="5" selected>Config B (5 Sensors)</option>
+                        <option value="7">Config C (7 Sensors)</option>
+                    </select>
+                </div>
+                <div class="pill">
+                    <label style="font-size:0.72rem; color:var(--text-muted); font-weight:600; margin-right:0.3rem;">Speed:</label>
+                    <select id="select-speed" class="select-pill">
+                        <option value="1">1x Realtime</option>
+                        <option value="2">2x Speed</option>
+                        <option value="5">5x Speed</option>
+                        <option value="10">10x Speed</option>
+                    </select>
+                </div>
+                <div class="pill">
+                    <button id="btn-room-settings" class="btn btn-secondary btn-sm" style="padding:0.2rem 0.6rem; font-size:0.68rem;">⚙️ Room Settings</button>
+                </div>
+                <div class="pill">
+                    <button id="btn-sound-toggle" class="btn btn-secondary btn-sm" style="padding:0.2rem 0.6rem; font-size:0.68rem;" title="Toggle Emergency Siren Sound">🔊 Sound: ON</button>
+                </div>
+                <div class="pill"><span id="status-dot" class="dot dot-gray"></span><span id="status-label">System Paused</span></div>
+                <div class="pill">🕒 <strong id="live-clock">--:--:--</strong></div>
+                <div class="pill user-pill" id="user-profile-pill" title="Authenticated Operator Profile">
+                    <span id="user-badge-icon">👤</span>
+                    <span id="user-name" style="font-weight:700;">Operator</span>
+                    <span id="user-role-badge" class="badge-role-tag">Safety Officer</span>
+                </div>
+                <button id="btn-logout" class="btn btn-outline btn-sm" style="padding:0.2rem 0.5rem; font-size:0.68rem; color:#dc2626; border-color:#fca5a5;" title="Sign out of operator terminal">🚪 Logout</button>
+            </div>
+        </header>
+
+        <!-- ===== ZERO-SCROLL MAIN GRID ===== -->
+        <div class="main-grid">
+            <!-- LEFT: 3D Storage Room Viewport -->
+            <div class="col-3d">
+                <div class="card card-3d">
+                    <div class="card-head">
+                        <span class="card-title">🏭 3D Virtual Chemical Storage Room</span>
+                        <div style="display:flex; align-items:center; gap:0.4rem;">
+                            <span class="card-sub">Orbit: Drag · Zoom: Scroll</span>
+                            <button id="btn-reset-cam" class="btn btn-secondary btn-sm" style="padding:0.2rem 0.5rem; font-size:0.68rem;">🎥 Reset Camera</button>
+                        </div>
+                    </div>
+                    <div class="canvas-wrap" id="room3d-canvas"></div>
+                </div>
+            </div>
+
+            <!-- RIGHT: Telemetry & Threshold Panel (No Scroll Required) -->
+            <div class="col-dash">
+                <!-- 1. Live Sensor Telemetry (Visible Immediately) -->
+                <div class="card">
+                    <div class="card-head">
+                        <span class="card-title">📡 Live Sensor Telemetry</span>
+                        <span class="card-sub" id="coverage-tag">Coverage: <strong id="val-coverage">85%</strong></span>
+                    </div>
+                    <div class="card-body tbl-wrap">
+                        <table class="sensor-tbl">
+                            <thead><tr><th>Sensor</th><th>Location</th><th>Temp</th><th>Rate</th><th>Status</th></tr></thead>
+                            <tbody id="sensor-tbody">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 2. Dedicated Temperature Threshold Card -->
+                <div class="card">
+                    <div class="card-head">
+                        <span class="card-title">🎯 Configured Safety Threshold</span>
+                        <button id="btn-settings" class="btn btn-secondary btn-sm" style="padding:0.2rem 0.5rem; font-size:0.68rem;">⚙️ EDIT THRESHOLD</button>
+                    </div>
+                    <div class="card-body threshold-body">
+                        <div class="thresh-visual">
+                            <span class="thresh-limit" id="val-min-safe">18°C</span>
+                            <div class="thresh-bar"><div class="thresh-fill"></div></div>
+                            <span class="thresh-limit" id="val-max-safe">25°C</span>
+                        </div>
+                        <div class="thresh-stats">
+                            <div><span>Room Avg:</span> <strong id="val-room-avg">24.5°C</strong></div>
+                            <div><span>Max Sensor:</span> <strong id="val-max-sensor" style="color:var(--status-warning);">S4 (26.2°C)</strong></div>
+                            <div><span>Condition:</span> <strong id="room-status" class="val-ok">NORMAL</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== CONTROLS & EMERGENCY ACTION BAR ===== -->
+        <div class="controls-emergency-bar">
+            <!-- Room Controls Panel -->
+            <div class="card ctrl-card">
+                <div class="card-head"><span class="card-title">🎮 Room Controls</span></div>
+                <div class="card-body">
+                    <div class="ctrl-grid">
+                        <button id="btn-start" class="btn btn-primary">▶ Start</button>
+                        <button id="btn-pause" class="btn btn-secondary">⏸ Pause</button>
+                        <button id="btn-reset" class="btn btn-danger">↺ Reset</button>
+                        <button id="btn-door" class="btn btn-outline">🚪 Open Door</button>
+                        <button id="btn-window" class="btn btn-outline">🪟 Open Window</button>
+                        <button id="btn-cooling" class="btn btn-outline">❄️ Cooling Fail</button>
+                        <button id="btn-ventilation" class="btn btn-outline">🌀 Vent Fail</button>
+                    </div>
+                    <div class="ambient-row" style="margin-top:0.4rem;">
+                        <label>Ambient Temp:</label>
+                        <input type="range" id="slider-ambient" min="15" max="45" step="0.5" value="30">
+                        <span id="ambient-val">30.0°C</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alerts & Emergency Actions Panel -->
+            <div class="card emerg-card">
+                <div class="card-head">
+                    <span class="card-title">🚨 System Alerts & Emergency Response</span>
+                    <button id="btn-toggle-occupancy" class="btn btn-secondary btn-sm">👷 Occupancy: OFF</button>
+                </div>
+                <div class="card-body emerg-body">
+                    <div class="alert-status-box" id="alert-status-box">
+                        <span>Status: <strong>No Active Violations</strong></span>
+                    </div>
+                    <div class="emerg-btn-row">
+                        <button id="btn-emergency-response" class="btn btn-danger btn-sm" style="flex:1;">🚨 EMERGENCY RESPONSE GUIDANCE</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== FOOTER ACTION TOOLBAR & SCENARIOS ===== -->
+        <div class="footer-toolbar">
+            <div class="card-row-full">
+                <button id="btn-export" class="btn btn-primary btn-sm">📥 EXPORT CSV</button>
+                <div class="scenario-pill-group">
+                    <button class="btn-scenario" data-scenario="door_incident">Scenario 1: Door Incident</button>
+                    <button class="btn-scenario" data-scenario="cooling_failure">Scenario 2: HVAC Outage</button>
+                    <button class="btn-scenario" data-scenario="full_demo">Scenario 3: Full Chain</button>
+                </div>
+                <div class="fault-inline">
+                    <label style="font-size:0.7rem; font-weight:600; color:var(--text-muted);">Simulate Fault:</label>
+                    <select id="select-fault-sensor" class="input-sm">
+                        <option value="S1">S1</option><option value="S2">S2</option><option value="S3">S3</option><option value="S4">S4</option><option value="S5">S5</option>
+                    </select>
+                    <select id="select-fault-status" class="input-sm">
+                        <option value="ONLINE">ONLINE</option><option value="OFFLINE">OFFLINE</option><option value="FAULT">FAULT</option>
+                    </select>
+                    <button id="btn-fault-sim" class="btn btn-secondary btn-sm">Set</button>
+                </div>
+                <button id="btn-report" class="btn btn-secondary btn-sm">📑 Executive Report</button>
+            </div>
+        </div>
+
+        <!-- ===== BOTTOM COMPACT DATA: CHART & AUDIT LOG ===== -->
+        <div class="bottom-grid">
+            <div class="card">
+                <div class="card-head"><span class="card-title">📈 Real-Time Multi-Zone Temperature Trends</span></div>
+                <div class="card-body"><div class="chart-wrap"><canvas id="trendChart"></canvas></div></div>
+            </div>
+            <div class="card">
+                <div class="card-head"><span class="card-title">📋 Timestamped System Event Audit Log</span></div>
+                <div class="card-body"><div class="event-scroll" id="event-log"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====================================================================
+         Modal 1: Emergency Response Guidance & OSHA Safety Actions
+         ==================================================================== -->
+    <div class="modal-bg" id="modal-emergency">
+        <div class="modal-box modal-lg">
+            <div class="modal-head">
+                <h3 style="color:#dc2626;">🚨 Emergency Response Guidance & Safety Protocol</h3>
+                <button id="btn-modal-emerg-close" class="btn-x">✕</button>
+            </div>
+            <div class="modal-body-scroll">
+                <!-- Personnel Notifications Simulation Card -->
+                <div class="emerg-panel">
+                    <h4 style="font-size:0.8rem; font-weight:700; margin-bottom:0.4rem;">Simulated Personnel Notification Dispatch:</h4>
+                    <div class="notify-grid">
+                        <div class="notify-item"><span>Safety Officer:</span> <strong id="notify-safety" class="val-ok">STANDBY</strong></div>
+                        <div class="notify-item"><span>Control Room:</span> <strong id="notify-control" class="val-ok">STANDBY</strong></div>
+                        <div class="notify-item"><span>Floor Supervisor:</span> <strong id="notify-supervisor" class="val-ok">STANDBY</strong></div>
+                        <div class="notify-item"><span>On-Site Personnel:</span> <strong id="notify-evac" class="val-ok">STANDBY</strong></div>
+                    </div>
+                </div>
+
+                <!-- Emergency Action Commands -->
+                <div class="emerg-actions-grid" style="margin-top:0.8rem;">
+                    <button id="btn-emerg-ack" class="btn btn-secondary btn-sm">[ACKNOWLEDGE ALERT]</button>
+                    <button id="btn-emerg-alarm" class="btn btn-danger btn-sm">🚨 [ACTIVATE EVACUATION ALARM]</button>
+                    <button id="btn-emerg-restrict" class="btn btn-warn-outline btn-sm">⛔ [RESTRICT ROOM ACCESS]</button>
+                    <button id="btn-emerg-notify" class="btn btn-primary btn-sm">📢 [NOTIFY SAFETY TEAM]</button>
+                    <button id="btn-test-siren" class="btn btn-outline btn-sm" style="grid-column: span 2;">🔊 [TEST / TOGGLE EMERGENCY SIREN]</button>
+                </div>
+
+                <!-- Standard Operating Emergency Procedure -->
+                <div class="sop-box" style="margin-top:0.8rem;">
+                    <h4 style="font-size:0.8rem; font-weight:700; color:#1e293b; margin-bottom:0.3rem;">Site Approved Emergency Response Actions:</h4>
+                    <ol class="sop-list">
+                        <li>Stop non-essential work in the affected chemical storage bay immediately.</li>
+                        <li>Alert responsible facility safety officer and control room personnel.</li>
+                        <li>Follow site-approved emergency action plan and evacuate area if required.</li>
+                        <li>Do not ask untrained personnel to inspect, move, open, mix, or dispose of chemical containers.</li>
+                        <li>Refer to substance-specific Safety Data Sheets (SDS) and facility emergency procedures.</li>
+                        <li>Coordinate with trained emergency responders and local emergency services.</li>
+                    </ol>
+                </div>
+
+                <!-- Mandatory Safety Disclaimer -->
+                <div class="disclaimer-box" style="margin-top:0.8rem;">
+                    <strong>Simulation Disclaimer:</strong> The emergency actions shown by this application are for demonstration and training purposes only. Actual chemical-storage incidents must be managed according to the specific chemical's SDS, facility emergency action plan, trained personnel procedures, applicable regulations, and instructions from appropriate emergency responders. The application must not be used to decide chemical disposal, neutralization, transfer, or other hazardous handling actions.
+                </div>
+            </div>
+            <div class="modal-foot">
+                <button id="btn-emerg-reset" class="btn btn-danger btn-sm">↺ [AUTHORISED SAFETY RESET]</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2: Threshold Config -->
+    <div class="modal-bg" id="modal">
+        <div class="modal-box">
+            <div class="modal-head"><h3>Configure Safety Thresholds</h3><button id="btn-modal-close" class="btn-x">✕</button></div>
+            <div class="form-g"><label>Minimum Temperature Limit (°C)</label><input type="number" id="cfg-min" class="input" value="18.0" step="0.5"></div>
+            <div class="form-g"><label>Maximum Safe Temperature (°C) [Warning Level]</label><input type="number" id="cfg-warn" class="input" value="25.0" step="0.5"></div>
+            <div class="form-g"><label>Critical High Temperature (°C) [Hazard Level]</label><input type="number" id="cfg-crit" class="input" value="30.0" step="0.5"></div>
+            <div class="modal-foot"><button id="btn-modal-cancel" class="btn btn-secondary">Cancel</button><button id="btn-modal-save" class="btn btn-primary">Save to Database</button></div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/simulation.js"></script>
+    <script type="module" src="js/app.js?v=3"></script>
+
+    <!-- Modal 3: Room Size & Sensor Placement Settings -->
+    <div class="modal-bg" id="modal-room-settings">
+        <div class="modal-box modal-room">
+            <div class="modal-head">
+                <h3>⚙️ Room Size &amp; Sensor Placement</h3>
+                <button id="btn-room-settings-close" class="btn-x">✕</button>
+            </div>
+
+            <!-- Tab Switcher -->
+            <div class="rs-tabs">
+                <button class="rs-tab rs-tab-active" data-tab="room-size">🏭 Room Size</button>
+                <button class="rs-tab" data-tab="sensor-placement">📡 Sensor Placement</button>
+            </div>
+
+            <!-- Tab: Room Size -->
+            <div class="rs-panel" id="rs-panel-room-size">
+                <div class="rs-info-box">Adjust room dimensions. All sensors and objects will auto-reposition when you click Apply.</div>
+                <div class="rs-slider-group">
+                    <label>Width (X axis): <strong id="rs-val-w">12</strong>m</label>
+                    <input type="range" id="rs-w" min="6" max="24" step="1" value="12">
+                </div>
+                <div class="rs-slider-group">
+                    <label>Height (Y axis): <strong id="rs-val-h">4</strong>m</label>
+                    <input type="range" id="rs-h" min="3" max="8" step="0.5" value="4">
+                </div>
+                <div class="rs-slider-group">
+                    <label>Depth (Z axis): <strong id="rs-val-d">8</strong>m</label>
+                    <input type="range" id="rs-d" min="4" max="20" step="1" value="8">
+                </div>
+                <div class="rs-preview-box">
+                    Room: <strong id="rs-preview-dims">12 × 4 × 8 m</strong> &nbsp;|&nbsp;
+                    Floor Area: <strong id="rs-preview-area">96 m²</strong> &nbsp;|&nbsp;
+                    Volume: <strong id="rs-preview-vol">384 m³</strong>
+                </div>
+            </div>
+
+            <!-- Tab: Sensor Placement -->
+            <div class="rs-panel rs-panel-hidden" id="rs-panel-sensor-placement">
+                <div class="rs-info-box">Fine-tune individual sensor positions in 3D space. Coordinates are relative to room centre.</div>
+                <div class="rs-sensor-grid" id="rs-sensor-grid">
+                    <!-- Sensor rows injected by JS -->
+                </div>
+            </div>
+
+            <div class="rs-applied-banner" id="rs-applied-banner">✅ Room settings applied to 3D view!</div>
+
+            <div class="modal-foot">
+                <button id="btn-room-settings-cancel" class="btn btn-secondary">Cancel</button>
+                <button id="btn-room-settings-reset" class="btn btn-outline">↺ Reset Defaults</button>
+                <button id="btn-room-settings-apply" class="btn btn-primary">✓ Apply to 3D Room</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Access Portal – IoT Chemical Storage Monitoring System</title>
+    <meta name="description" content="Authorized Personnel Sign-In Portal for Virtual Chemical Storage Room Monitoring and Emergency Telemetry">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/login.css?v=2">
+</head>
+<body>
+    <div class="login-container">
+        <!-- Top Branding Header -->
+        <header class="login-header">
+            <div class="brand-icon-wrap">🧪</div>
+            <h1>Virtual Chemical Storage Platform</h1>
+            <p>IoT Multi-Zone 3D Telemetry &amp; Emergency Incident Control</p>
+            <div class="compliance-badge">
+                <span>🛡️</span>
+                <span>OSHA 1910.1200 &amp; NFPA 704 Compliance Gateway</span>
+            </div>
+        </header>
+
+        <!-- Main Auth Card -->
+        <div class="login-card">
+            <!-- Tabs -->
+            <div class="auth-tabs">
+                <button type="button" class="auth-tab-btn active" id="tab-login">🔑 Operator Sign In</button>
+                <button type="button" class="auth-tab-btn" id="tab-register">📝 Register Personnel</button>
+            </div>
+
+            <!-- Alert Notification Banner -->
+            <div class="auth-alert" id="auth-alert">
+                <span id="alert-icon">⚠️</span>
+                <span id="alert-message"></span>
+            </div>
+
+            <!-- TAB 1: Operator Sign In Form -->
+            <form id="form-login" class="auth-form">
+                <div class="form-field">
+                    <label for="login-username">Operator ID / Username</label>
+                    <div class="input-with-icon">
+                        <span class="input-icon">👤</span>
+                        <input type="text" id="login-username" class="auth-input" placeholder="e.g. admin or operator" required autocomplete="username">
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <label for="login-password">Access Passcode</label>
+                    <div class="input-with-icon">
+                        <span class="input-icon">🔒</span>
+                        <input type="password" id="login-password" class="auth-input" placeholder="Enter secure password" required autocomplete="current-password">
+                        <button type="button" class="toggle-password" data-target="login-password" title="Show/Hide Password">👁️</button>
+                    </div>
+                </div>
+
+                <div class="form-options">
+                    <label class="remember-label">
+                        <input type="checkbox" id="remember-me" checked>
+                        <span>Remember credentials on this terminal</span>
+                    </label>
+                </div>
+
+                <button type="submit" id="btn-login-submit" class="btn-auth-submit">
+                    <span>Authorize &amp; Enter Virtual Bay</span>
+                    <span>→</span>
+                </button>
+            </form>
+
+            <!-- TAB 2: Register Personnel Form -->
+            <form id="form-register" class="auth-form hidden">
+                <div class="form-field">
+                    <label for="reg-name">Full Name</label>
+                    <div class="input-with-icon">
+                        <span class="input-icon">🪪</span>
+                        <input type="text" id="reg-name" class="auth-input" placeholder="e.g. Dr. Alex Mercer" required>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.6rem;">
+                    <div class="form-field">
+                        <label for="reg-badge">Badge ID</label>
+                        <div class="input-with-icon">
+                            <span class="input-icon">🏷️</span>
+                            <input type="text" id="reg-badge" class="auth-input" placeholder="e.g. SEC-089" value="OPS-512">
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <label for="reg-role">Designated Role</label>
+                        <div class="input-with-icon">
+                            <span class="input-icon">⚙️</span>
+                            <select id="reg-role" class="auth-select">
+                                <option value="Safety Officer">Safety Officer</option>
+                                <option value="Plant Operator" selected>Plant Operator</option>
+                                <option value="Safety Auditor">Safety Auditor</option>
+                                <option value="Facility Manager">Facility Manager</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <label for="reg-username">Choose Username</label>
+                    <div class="input-with-icon">
+                        <span class="input-icon">👤</span>
+                        <input type="text" id="reg-username" class="auth-input" placeholder="Username (no spaces)" required autocomplete="username">
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <label for="reg-password">Create Password</label>
+                    <div class="input-with-icon">
+                        <span class="input-icon">🔒</span>
+                        <input type="password" id="reg-password" class="auth-input" placeholder="Minimum 4 characters" required autocomplete="new-password">
+                        <button type="button" class="toggle-password" data-target="reg-password" title="Show/Hide Password">👁️</button>
+                    </div>
+                </div>
+
+                <button type="submit" id="btn-reg-submit" class="btn-auth-submit">
+                    <span>Register &amp; Access Platform</span>
+                    <span>→</span>
+                </button>
+            </form>
+
+            <!-- 1-Click Fast Login for Evaluators & Demo -->
+            <div class="demo-accounts-wrap">
+                <span class="demo-title">⚡ 1-Click Demo Evaluation Sign In</span>
+                <div class="demo-grid">
+                    <button type="button" class="demo-btn" data-user="admin" data-pass="admin123" title="Login as Safety Officer">
+                        <span class="demo-btn-icon">🛡️</span>
+                        <span class="demo-btn-role">Safety Officer</span>
+                        <span class="demo-btn-user">Dr. Mitchell</span>
+                    </button>
+                    <button type="button" class="demo-btn" data-user="operator" data-pass="operator123" title="Login as Plant Operator">
+                        <span class="demo-btn-icon">👷</span>
+                        <span class="demo-btn-role">Plant Operator</span>
+                        <span class="demo-btn-user">John Davis</span>
+                    </button>
+                    <button type="button" class="demo-btn" data-user="auditor" data-pass="auditor123" title="Login as Safety Auditor">
+                        <span class="demo-btn-icon">📋</span>
+                        <span class="demo-btn-role">Safety Auditor</span>
+                        <span class="demo-btn-user">Elen Vance</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer System Notice -->
+        <footer class="login-footer">
+            <p><strong>Restricted Facility Terminal:</strong> All telemetry interactions, threshold changes, and simulated emergency dispatches are cryptographically logged with operator timestamps into SQLite audit tables.</p>
+        </footer>
+    </div>
+
+    <script src="js/auth.js"></script>
+</body>
+</html>
+
